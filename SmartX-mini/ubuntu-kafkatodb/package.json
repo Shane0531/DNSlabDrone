@@ -1,7 +1,6 @@
 {
   "name": "kafka_to_db",
   "version": "1.0.0",
-  "description": "",
   "main": "kafka_to_db.js",
   "scripts": {
     "start": "node kafka_to_db.js"
@@ -11,5 +10,7 @@
   "dependencies": {
     "influx": "^5.0.4",
     "kafka-node": "^1.4.0"
-  }
+  },
+  "devDependencies": {},
+  "description": ""
 }
