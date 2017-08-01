@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>NIA Drone Project</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container">
+    <div id="chatLogs"></div>
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+  $(function(){
+    // socket.io 서버에 접속한다
+    var socket = io();
+
+    // 서버로 자신의 정보를 전송한다.
+    socket.emit("init", {
+    });
+
+    // 서버로부터의 메시지가 수신되면
+    socket.on("rasp", function(data) {
+      console.log(data);
+      if(data == null) {
+      $("#chatLogs").append("<div> Not Connected </diiv>");
+      } else {
+      $("#chatLogs").append("<div>id: " + data.id + " ,light: "+data.light+" ,temp: "+data.temp+", time: "+data.time+"</div>");
+      }   
+    });
+
+  });
+  </script>
+</body>
+</html>

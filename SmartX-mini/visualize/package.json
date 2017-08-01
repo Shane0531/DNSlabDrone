@@ -1,0 +1,16 @@
+{
+  "name": "visualize",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "node app"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "4.15.3",
+    "influx": "5.0.7",
+    "socket.io": "2.0.3"
+  }
+}

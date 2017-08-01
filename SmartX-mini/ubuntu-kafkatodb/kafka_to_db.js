@@ -22,34 +22,11 @@ resourceOffset.fetch([{
         partition: 0,
         time: -1,
         maxNum: 1
-	},
-	{
-        topic: 'sensor',
-        partition: 1,
-        time: -1,
-        maxNum: 1
-    },
-    {
-        topic: 'sensor',
-        partition: 2,
-        time: -1,
-        maxNum: 1
     }
 ], function(err, data) {
-	console.log(data);
     var resourceConsumer = new kafka.Consumer(resourceKafka, [{
             topic: 'sensor',
             partition: 0,
-            offset: data['sensor'][0]
-        },
-	{
-            topic: 'sensor',
-            partition: 1,
-            offset: data['sensor'][0]
-        },
-	{
-            topic: 'sensor',
-            partition: 2,
             offset: data['sensor'][0]
         }
     ], {
@@ -58,15 +35,51 @@ resourceOffset.fetch([{
     });
 
     resourceConsumer.on('message', function(message) {
-        var messageJSON = JSON.parse(message.value);
-
+	var messageJSON = JSON.parse(message.value);
+console.log(messageJSON);
         DB.writePoints([{
             measurement: 'sensor',
             tags: {
             },
             fields: {
+		id : messageJSON.ID,
           	light: messageJSON.light,
 		temp: messageJSON.temp
+            },
+        }])
+
+    });
+
+});
+
+resourceOffset.fetch([{
+        topic: 'sensor2',
+        partition: 0,
+        time: -1,
+        maxNum: 1
+    }
+], function(err, data) {
+    var resourceConsumer = new kafka.Consumer(resourceKafka, [{
+            topic: 'sensor2',
+            partition: 0,
+            offset: data['sensor2'][0]
+        }
+    ], {
+        autoCommit: false,
+        fromOffset: true
+    });
+
+    resourceConsumer.on('message', function(message) {
+        var messageJSON = JSON.parse(message.value);
+console.log(messageJSON);
+        DB.writePoints([{
+            measurement: 'sensor2',
+            tags: {
+            },
+            fields: {
+                id : messageJSON.ID,
+                light: messageJSON.light,
+                temp: messageJSON.temp
             },
         }])
 
