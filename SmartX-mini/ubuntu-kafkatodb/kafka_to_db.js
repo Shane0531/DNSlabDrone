@@ -1,6 +1,7 @@
 const influx = require('influx')
 var kafka = require('kafka-node');
 
+var topic_name = process.env.TOPIC_NAME
 console.log('start');
 // InfluxDB
 var DB = new influx.InfluxDB({
@@ -18,16 +19,17 @@ var resourceOffset = new kafka.Offset(resourceKafka);
 
 console.log('fetch');
 resourceOffset.fetch([{
-        topic: 'sensor',
+        topic: topic_name,
         partition: 0,
         time: -1,
         maxNum: 1
     }
 ], function(err, data) {
+    console.log(data);
     var resourceConsumer = new kafka.Consumer(resourceKafka, [{
-            topic: 'sensor',
+            topic: topic_name,
             partition: 0,
-            offset: data['sensor'][0]
+            offset: data[topic_name][0]
         }
     ], {
         autoCommit: false,
@@ -36,53 +38,26 @@ resourceOffset.fetch([{
 
     resourceConsumer.on('message', function(message) {
 	var messageJSON = JSON.parse(message.value);
-console.log(messageJSON);
         DB.writePoints([{
-            measurement: 'sensor',
+            measurement: topic_name,
             tags: {
             },
             fields: {
 		id : messageJSON.ID,
           	light: messageJSON.light,
-		temp: messageJSON.temp
+		temp: messageJSON.temp,
+		latitude: messageJSON.latitude,
+		logitude: messageJSON.logitude,
+		ratio: messageJSON.ratio,
+		concentration: messageJSON.concentration,
+		lowpulseoccupancy: messageJSON.lowpulseoccupancy,
+		humidity: messageJSON.humidity,
+		luminance: messageJSON.luminance
             },
         }])
+        console.log(messageJSON);
 
     });
 
 });
 
-resourceOffset.fetch([{
-        topic: 'sensor2',
-        partition: 0,
-        time: -1,
-        maxNum: 1
-    }
-], function(err, data) {
-    var resourceConsumer = new kafka.Consumer(resourceKafka, [{
-            topic: 'sensor2',
-            partition: 0,
-            offset: data['sensor2'][0]
-        }
-    ], {
-        autoCommit: false,
-        fromOffset: true
-    });
-
-    resourceConsumer.on('message', function(message) {
-        var messageJSON = JSON.parse(message.value);
-console.log(messageJSON);
-        DB.writePoints([{
-            measurement: 'sensor2',
-            tags: {
-            },
-            fields: {
-                id : messageJSON.ID,
-                light: messageJSON.light,
-                temp: messageJSON.temp
-            },
-        }])
-
-    });
-
-});

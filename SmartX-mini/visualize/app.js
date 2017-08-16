@@ -1,5 +1,6 @@
 var app = require('express')();
 const influx = require('influx');
+const path = require('path');
 var server = require('http').createServer(app);
 // http server를 socket.io server로 upgrade한다
 var io = require('socket.io')(server);
@@ -27,28 +28,17 @@ app.get('/', function(req, res) {
   res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/times', function (req, res) {
-  DB.query(`
-    select * from sensor
-    where time > now() - 3s
-    order by time desc
-    limit 10
-  `).then(result => {
-    res.json(result)
-  }).catch(err => {
-    res.status(500).send(err.stack)
-  })
-})
+app.use('/dist/',require('express').static(path.join(__dirname,'/dist'), { maxAge: 259200000}))
+app.use('/img/',require('express').static(path.join(__dirname,'/img'), { maxAge: 259200000} ))
+
 
 // connection event handler
 // connection이 수립되면 event handler function의 인자로 socket인 들어온다
 io.on('connection', function(socket) {
 
-  // 접속한 클라이언트의 정보가 수신되면
-  socket.on('init', function(data) {
-
-    DB.query(`
-        select * from sensor
+socket.on("init", function() {
+DB.query(`
+        select * from jnusensor
         where time > now() - 3s
         order by time desc
         limit 1
@@ -56,15 +46,15 @@ io.on('connection', function(socket) {
          if(result[0] != undefined)
            raspIsOn = true;
          else
-           raspIsOn = false;
-         socket.volatile.emit('rasp', result[0]);
+	   raspIsOn2 = false;
+         socket.emit('rasp', result[0]);
       }).catch(err => {
          raspIsOn = false;
-         socket.volatile.emit('rasp', null)
+         socket.emit('rasp', null)
       })
 
 DB.query(`
-        select * from sensor2
+        select * from jnusensor2
         where time > now() - 3s
         order by time desc
         limit 1
@@ -73,22 +63,23 @@ DB.query(`
            raspIsOn2 = true;
          else
            raspIsOn2 = false;
-         socket.volatile.emit('rasp2', result[0]);
+         socket.emit('rasp2', result[0]);
       }).catch(err => {
         raspIsOn2 = false;
-         socket.volatile.emit('rasp2', null)
+         socket.emit('rasp2', null)
       })
-  })
+})
+
 
 var tweets = setInterval(function () {
     getBieberTweet(function (tweet) {
         DB.query(`
-        select * from sensor
+        select * from jnusensor
         where time > now() - 3s
         order by time desc
         limit 1
       `).then(result => {
-         console.log(raspIsOn,result[0]);
+         //console.log("jnusensor : " + raspIsOn,result[0]);
          
          if(raspIsOn && result[0] == undefined){
            socket.volatile.emit('rasp', result[0]);
@@ -106,17 +97,17 @@ var tweets = setInterval(function () {
 var tweets2 = setInterval(function () {
     getBieberTweet(function (tweet) {
         DB.query(`
-        select * from sensor2
+        select * from jnusensor2
         where time > now() - 3s
         order by time desc
         limit 1
       `).then(result => {
-         console.log(raspIsOn,result[0]);
+         //console.log("jnusensor2 : " + raspIsOn2,result[0]);
 
-         if(raspIsOn && result[0] == undefined){
+         if(raspIsOn2 && result[0] == undefined){
            socket.volatile.emit('rasp2', result[0]);
            raspIsOn2 = false;
-         } else if(!raspIsOn && result[0] != undefined) {
+         } else if(!raspIsOn2 && result[0] != undefined) {
            socket.volatile.emit('rasp2', result[0]);
            raspIsOn2 = true;
          }
