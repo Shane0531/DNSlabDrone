@@ -79,7 +79,7 @@ var tweets = setInterval(function () {
         order by time desc
         limit 1
       `).then(result => {
-         //console.log("jnusensor : " + raspIsOn,result[0]);
+         console.log("jnusensor : " + raspIsOn,result[0]);
          
          if(raspIsOn && result[0] == undefined){
            socket.volatile.emit('rasp', result[0]);

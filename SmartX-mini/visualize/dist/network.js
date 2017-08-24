@@ -147,7 +147,7 @@ links.Network = function(container) {
             "group": undefined
         },
         "links": {
-            "widthMin": 1,
+            "widthMin": 10,
             "widthMax": 15,
             "width": 1,
             "style": "line",
